@@ -68,6 +68,10 @@ def is_scam(config: dict, parsed: urllib.parse.ParseResult) -> bool:
     against_domain = domain_tld.keys()
     against_path = config["path"]
     against_querystring = config["query"]
+    threshold_domain = config["domain_threshold"]
+    threshold_keywords = config["domain_keywords_threshold"]
+    threshold_path = config["path_threshold"]
+    threshold_querystring = config["query_threshold"]
 
     # Testing the main domain.
     netloc = parsed.netloc
@@ -82,7 +86,7 @@ def is_scam(config: dict, parsed: urllib.parse.ParseResult) -> bool:
             return True
         return netloc_extract.suffix not in domain_tld[domain]
     # Anything above 0.8 is very suspicious.
-    suspicious = check_domain > 0.8
+    suspicious = check_domain > threshold_domain
 
     # We can ignore something not very suspicious.
 
@@ -92,7 +96,7 @@ def is_scam(config: dict, parsed: urllib.parse.ParseResult) -> bool:
 
     # Testing for domain keywords.
     # This is only done for elevated risk domains.
-    if check_domain > 0.4:
+    if check_domain > threshold_keywords:
         for keyword in domain_keywords:
             check_keyword = keyword in domain
             suspicious = suspicious or check_keyword
@@ -106,7 +110,7 @@ def is_scam(config: dict, parsed: urllib.parse.ParseResult) -> bool:
         check_path = likeliness(path, against_path)
         # If there is an exact match, then it's a scam.
         # Use higher threshold for checking.
-        suspicious = suspicious or check_path > 0.9
+        suspicious = suspicious or check_path > threshold_path
 
     # Testing for certain query strings.
     query_values = urllib.parse.parse_qs(parsed.query)
@@ -116,7 +120,7 @@ def is_scam(config: dict, parsed: urllib.parse.ParseResult) -> bool:
             continue
         check_query = likeliness(query, against_querystring)
         # Use higher threshold for checking.
-        suspicious = suspicious or check_query > 0.9
+        suspicious = suspicious or check_query > threshold_querystring
 
     # Return the final assessment.
     return suspicious

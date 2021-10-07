@@ -11,7 +11,7 @@ config_schema = {
             "type": "object",
             "minProperties": 1,
             "patternProperties": {
-                "^I_": {
+                ".*": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -19,11 +19,21 @@ config_schema = {
                 }
             }
         },
+        "domain_threshold": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+        },
         "domain_keywords": {
             "type": "array",
             "items": {
                 "type": "string"
             }
+        },
+        "domain_keywords_threshold": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
         },
         "path": {
             "type": "array",
@@ -31,14 +41,29 @@ config_schema = {
                 "type": "string"
             }
         },
+        "path_threshold": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+        },
         "query": {
             "type": "array",
             "items": {
                 "type": "string"
             }
         },
+        "query_threshold": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+        },
     },
-    "required": ["domain", "domain_keywords", "path", "query"]
+    "required": [
+        "domain", "domain_threshold",
+        "domain_keywords", "domain_keywords_threshold",
+        "path", "path_threshold",
+        "query", "query_threshold"
+    ]
 }
 
 # Get the command line options.
