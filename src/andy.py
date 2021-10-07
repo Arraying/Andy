@@ -1,19 +1,10 @@
+import typing
 import urllib.parse
 import tldextract
 
-# domain_tld = {
-#     'discord': ['com', 'gift'],
-#     'discordapp': ['com'],
-#     'steamcommunity': ['com']
-# }
-# domain_keywords = ['nitro']
-# against_domain = domain_tld.keys()
-# against_path = ['nitro', 'trade', 'tradeoffer', 'gift']
-# against_querystring = ['partner', 'gift']
-
 
 # noinspection PyTypeChecker
-def levenshtein(s1, s2):
+def levenshtein(s1: str, s2: str) -> float:
     """
     Computes the normalized Levenshtein distance between two strings.
     A value of 1 indicates a perfect match, 0 indicates completely different.
@@ -39,7 +30,7 @@ def levenshtein(s1, s2):
     return result
 
 
-def likeliness(value_to_match, against):
+def likeliness(value_to_match: str, against: typing.List[str]) -> float:
     """
     Evaluates the highest match for each component of the value to match.
     Components are strings separated by a dash.
@@ -58,7 +49,7 @@ def likeliness(value_to_match, against):
     return ceil
 
 
-def is_scam(config, parsed):
+def is_scam(config: dict, parsed: urllib.parse.ParseResult) -> bool:
     """
     Whether or not a specific parsed URL is flagged as a scam.
     This will try to evaluate the decision based off of at least one of these indicators:
@@ -77,9 +68,6 @@ def is_scam(config, parsed):
     against_domain = domain_tld.keys()
     against_path = config["path"]
     against_querystring = config["query"]
-
-    # Define whether the domain is suspicious.
-    suspicious = False
 
     # Testing the main domain.
     netloc = parsed.netloc
@@ -134,7 +122,7 @@ def is_scam(config, parsed):
     return suspicious
 
 
-def assess(config, input_lines, target):
+def assess(config: dict, input_lines: typing.List[str], target: bool) -> typing.List[str]:
     """
     Assesses any failures that the parser may encounter.
     :param config: The config to use.
