@@ -3,52 +3,6 @@ import urllib.parse
 import tldextract
 
 
-# noinspection PyTypeChecker
-def levenshtein(s1: str, s2: str) -> float:
-    """
-    Computes the normalized Levenshtein distance between two strings.
-    A value of 1 indicates a perfect match, 0 indicates completely different.
-    This value will be continuous.
-    Obtained from StackOverflow.
-    :param s1: The first string.
-    :param s2: The second string.
-    :return: A value [0, 1].
-    """
-    l1 = len(s1)
-    l2 = len(s2)
-    matrix = [list(range(l1 + 1))] * (l2 + 1)
-    for zz in list(range(l2 + 1)):
-        matrix[zz] = list(range(zz, zz + l1 + 1))
-    for zz in list(range(0, l2)):
-        for sz in list(range(0, l1)):
-            if s1[sz] == s2[zz]:
-                matrix[zz+1][sz+1] = min(matrix[zz+1][sz] + 1, matrix[zz][sz+1] + 1, matrix[zz][sz])
-            else:
-                matrix[zz+1][sz+1] = min(matrix[zz+1][sz] + 1, matrix[zz][sz+1] + 1, matrix[zz][sz] + 1)
-    distance = float(matrix[l2][l1])
-    result = 1.0-distance/max(l1, l2)
-    return result
-
-
-def likeliness(value_to_match: str, against: typing.List[str]) -> float:
-    """
-    Evaluates the highest match for each component of the value to match.
-    Components are strings separated by a dash.
-    :param value_to_match: The value to match.
-    :param against: A target list of strings to match the values against.
-    :return: A value [0-1] where 1 implies at least one component was a perfect match.
-    """
-    parts = value_to_match.split('-')
-    ceil = 0
-    for safe in against:
-        for i, part in enumerate(parts):
-            check = levenshtein(part, safe)
-            if check > ceil:
-                ceil = check
-
-    return ceil
-
-
 def is_scam(config: dict, parsed: urllib.parse.ParseResult) -> bool:
     """
     Whether or not a specific parsed URL is flagged as a scam.
@@ -124,6 +78,52 @@ def is_scam(config: dict, parsed: urllib.parse.ParseResult) -> bool:
 
     # Return the final assessment.
     return suspicious
+
+
+def likeliness(value_to_match: str, against: typing.List[str]) -> float:
+    """
+    Evaluates the highest match for each component of the value to match.
+    Components are strings separated by a dash.
+    :param value_to_match: The value to match.
+    :param against: A target list of strings to match the values against.
+    :return: A value [0-1] where 1 implies at least one component was a perfect match.
+    """
+    parts = value_to_match.split('-')
+    ceil = 0
+    for safe in against:
+        for i, part in enumerate(parts):
+            check = levenshtein(part, safe)
+            if check > ceil:
+                ceil = check
+
+    return ceil
+
+
+# noinspection PyTypeChecker
+def levenshtein(s1: str, s2: str) -> float:
+    """
+    Computes the normalized Levenshtein distance between two strings.
+    A value of 1 indicates a perfect match, 0 indicates completely different.
+    This value will be continuous.
+    Obtained from StackOverflow.
+    :param s1: The first string.
+    :param s2: The second string.
+    :return: A value [0, 1].
+    """
+    l1 = len(s1)
+    l2 = len(s2)
+    matrix = [list(range(l1 + 1))] * (l2 + 1)
+    for zz in list(range(l2 + 1)):
+        matrix[zz] = list(range(zz, zz + l1 + 1))
+    for zz in list(range(0, l2)):
+        for sz in list(range(0, l1)):
+            if s1[sz] == s2[zz]:
+                matrix[zz+1][sz+1] = min(matrix[zz+1][sz] + 1, matrix[zz][sz+1] + 1, matrix[zz][sz])
+            else:
+                matrix[zz+1][sz+1] = min(matrix[zz+1][sz] + 1, matrix[zz][sz+1] + 1, matrix[zz][sz] + 1)
+    distance = float(matrix[l2][l1])
+    result = 1.0-distance/max(l1, l2)
+    return result
 
 
 def assess(config: dict, input_lines: typing.List[str], target: bool) -> typing.List[str]:
