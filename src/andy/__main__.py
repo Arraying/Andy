@@ -3,69 +3,6 @@ import json
 import jsonschema
 import sys
 
-# The configuration file schema.
-config_schema = {
-    "type": "object",
-    "properties": {
-        "domain": {
-            "type": "object",
-            "minProperties": 1,
-            "patternProperties": {
-                ".*": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "domain_threshold": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 1
-        },
-        "domain_keywords": {
-            "type": "array",
-            "items": {
-                "type": "string"
-            }
-        },
-        "domain_keywords_threshold": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 1
-        },
-        "path": {
-            "type": "array",
-            "items": {
-                "type": "string"
-            }
-        },
-        "path_threshold": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 1
-        },
-        "query": {
-            "type": "array",
-            "items": {
-                "type": "string"
-            }
-        },
-        "query_threshold": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 1
-        },
-    },
-    "required": [
-        "domain", "domain_threshold",
-        "domain_keywords", "domain_keywords_threshold",
-        "path", "path_threshold",
-        "query", "query_threshold"
-    ]
-}
-
 # Get the command line options.
 args = sys.argv[1:]
 # Ensure that all command line options are there.
@@ -84,12 +21,11 @@ try:
     with open(args[0], "r") as config_file:
         # Load the config and validate it.
         config_json = json.load(config_file)
-        jsonschema.validate(schema=config_schema, instance=config_json)
 
         # Test run against the legit set - check for false positives.
         with open(args[1]) as legit:
             legit_link = legit.readlines()
-            result = andy.assess(config_json, legit_link, False)
+            result = andy.assess(config_json, legit_link, False, validate_config=True)
             print(f"False positive count: {len(result)}")
             for issue in result:
                 print(f"- {issue}")
@@ -97,7 +33,7 @@ try:
         # Test run against the scam set - check for false negatives.
         with open(args[2]) as scams:
             scam_link = scams.readlines()
-            result = andy.assess(config_json, scam_link, True)
+            result = andy.assess(config_json, scam_link, True, validate_config=True)
             print(f"False negative count: {len(result)}")
             for issue in result:
                 print(f"- {issue}")

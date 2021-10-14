@@ -1,9 +1,11 @@
+import jsonschema
+import schema
+import tldextract
 import typing
 import urllib.parse
-import tldextract
 
 
-def is_scam(config: dict, parsed: urllib.parse.ParseResult) -> bool:
+def is_scam(config: dict, parsed: urllib.parse.ParseResult, validate_config: bool = True) -> bool:
     """
     Whether or not a specific parsed URL is flagged as a scam.
     This will try to evaluate the decision based off of at least one of these indicators:
@@ -13,8 +15,13 @@ def is_scam(config: dict, parsed: urllib.parse.ParseResult) -> bool:
     4. Domain querystring very similar to that of a legit domain.
     :param config: The config to use.
     :param parsed: The parsed URL.
+    :param validate_config: Whether or not to validate the config according to the schema.
     :return: True if it is, false otherwise.
     """
+
+    # Optionally, validate config.
+    if validate_config:
+        valid_config(config)
 
     # Load the criteria from the config.
     domain_tld = config["domain"]
@@ -31,7 +38,7 @@ def is_scam(config: dict, parsed: urllib.parse.ParseResult) -> bool:
     netloc = parsed.netloc
     netloc_extract = tldextract.extract(netloc)
     domain = netloc_extract.domain
-    check_domain = likeliness(domain, against_domain)
+    check_domain = _likeliness(domain, against_domain)
     if check_domain == 1:
         # We have an exact match, but we need to check against TLD.
         # If the TLD is different, this is 100% a scam.
@@ -61,7 +68,7 @@ def is_scam(config: dict, parsed: urllib.parse.ParseResult) -> bool:
         # Ignore empty paths.
         if not path:
             continue
-        check_path = likeliness(path, against_path)
+        check_path = _likeliness(path, against_path)
         # If there is an exact match, then it's a scam.
         # Use higher threshold for checking.
         suspicious = suspicious or check_path > threshold_path
@@ -72,7 +79,7 @@ def is_scam(config: dict, parsed: urllib.parse.ParseResult) -> bool:
         # Ignore empty query values.
         if not query:
             continue
-        check_query = likeliness(query, against_querystring)
+        check_query = _likeliness(query, against_querystring)
         # Use higher threshold for checking.
         suspicious = suspicious or check_query > threshold_querystring
 
@@ -80,7 +87,36 @@ def is_scam(config: dict, parsed: urllib.parse.ParseResult) -> bool:
     return suspicious
 
 
-def likeliness(value_to_match: str, against: typing.List[str]) -> float:
+def assess(config: dict, input_lines: typing.List[str], target: bool, validate_config: bool = True) -> typing.List[str]:
+    """
+    Assesses any failures that the parser may encounter.
+    :param config: The config to use.
+    :param input_lines: The input lines.
+    :param target: The target boolean the inputs should evaluate to.
+    :param validate_config: Whether or not to validate the config according to the schema.
+    :return: A list of all wrongly matched URLs.
+    :raises jsonschema.ValidationError: If the config does not adhere to the schema.
+    """
+    wrong = []
+    for line in input_lines:
+        line = line.strip()
+        parsed = urllib.parse.urlparse(line)
+        detected = is_scam(config, parsed, validate_config=validate_config)
+        if detected != target:
+            wrong.append(line)
+    return wrong
+
+
+def valid_config(config: dict):
+    """
+    Validates the config against the schema.
+    :param config: The config.
+    :raises jsonschema.ValidationError: If the config does not adhere to the schema.
+    """
+    jsonschema.validate(schema=schema.config_schema, instance=config)
+
+
+def _likeliness(value_to_match: str, against: typing.List[str]) -> float:
     """
     Evaluates the highest match for each component of the value to match.
     Components are strings separated by a dash.
@@ -92,7 +128,7 @@ def likeliness(value_to_match: str, against: typing.List[str]) -> float:
     ceil = 0
     for safe in against:
         for i, part in enumerate(parts):
-            check = levenshtein(part, safe)
+            check = _levenshtein(part, safe)
             if check > ceil:
                 ceil = check
 
@@ -100,7 +136,7 @@ def likeliness(value_to_match: str, against: typing.List[str]) -> float:
 
 
 # noinspection PyTypeChecker
-def levenshtein(s1: str, s2: str) -> float:
+def _levenshtein(s1: str, s2: str) -> float:
     """
     Computes the normalized Levenshtein distance between two strings.
     A value of 1 indicates a perfect match, 0 indicates completely different.
@@ -124,21 +160,3 @@ def levenshtein(s1: str, s2: str) -> float:
     distance = float(matrix[l2][l1])
     result = 1.0-distance/max(l1, l2)
     return result
-
-
-def assess(config: dict, input_lines: typing.List[str], target: bool) -> typing.List[str]:
-    """
-    Assesses any failures that the parser may encounter.
-    :param config: The config to use.
-    :param input_lines: The input lines.
-    :param target: The target boolean the inputs should evaluate to.
-    :return: A list of all wrongly matched URLs.
-    """
-    wrong = []
-    for line in input_lines:
-        line = line.strip()
-        parsed = urllib.parse.urlparse(line)
-        detected = is_scam(config, parsed)
-        if detected != target:
-            wrong.append(line)
-    return wrong
