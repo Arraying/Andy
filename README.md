@@ -55,7 +55,9 @@ The following URLs will be evaluated as follows:
 
 ## Installation
 
-Documentation to be added here.
+```
+pip install andy-fraud
+```
 
 ## Usage (library)
 
@@ -64,14 +66,24 @@ Documentation to be added here.
 
 ## Usage (command line)
 
-Andy can be run from the command line to test the accuracy of dection.
+Andy can be run from the command line to test the accuracy of detection.
 For this, two files are needed.
 Both files contain one domain per line (tailing and leading whitespace is ignored).
 The first file, referred to as the legitimate file, will contain only URLs that are not considered fraud.
 The second file, referred to as the scam file, will contain only URLs that are fraudulent.
 Andy will then test how many of the URLs from the legitimate file Andy flags as fraudulent, and vice versa.
 
+### Command line arguments
+
 As such, 3 command line arguments are required:
 1. The path of the config file (must be stored in JSON format).
 2. The path of the legitimate file.
 3. The path of the scam file.
+
+### Running the script
+
+Make sure that the package is installed (see above). This is an example, your file names may differ!
+
+**General:** `python -m andy config.json legit.txt scam.txt`  
+**Windows:** `py -m andy config.json legit.txt scam.txt`
+

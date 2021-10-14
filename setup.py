@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="andy_fraud",
-    version="0.1.4",
+    version="0.1.5",
     author="Arraying",
     author_email="paul.huebner@googlemail.com",
     description="Anti-typosquatting suite",
