@@ -62,7 +62,39 @@ pip install andy-fraud
 ## Usage (library)
 
 Andy can be used as a library for other projects.
-Documentation to be added here.
+
+#### Loading the config
+
+First, the config needs to be loaded. 
+The config can be stored anywhere, from purely in-memory to persisting in a JSON file.
+For this example, let us assume the config is in a file, and we are parsing it as JSON.
+
+```python
+config = json.load(config_file)
+```
+
+#### Getting a parsed URL
+
+The algorithm requires a parsed URL.
+This can be obtained easily, where `string` is a variable that contains our link as a string.
+
+```python
+parsed = urllib.parse.urlparse(string)
+```
+
+#### Testing if the URL is fraudulent
+
+This snippet demonstrates how to actually tell if a URL is fraudulent.
+It includes the import of the package.
+```python
+from andy import suite
+
+if suite.is_scam(config, parsed):
+    print("Likely a scam link!")
+else:
+    print("Probably not a scam link!")
+```
+
 
 ## Usage (command line)
 
