@@ -1,4 +1,4 @@
-import andy
+from . import suite
 import json
 import jsonschema
 import sys
@@ -25,7 +25,7 @@ try:
         # Test run against the legit set - check for false positives.
         with open(args[1]) as legit:
             legit_link = legit.readlines()
-            result = andy.assess(config_json, legit_link, False, validate_config=True)
+            result = suite.assess(config_json, legit_link, False, validate_config=True)
             print(f"False positive count: {len(result)}")
             for issue in result:
                 print(f"- {issue}")
@@ -33,7 +33,7 @@ try:
         # Test run against the scam set - check for false negatives.
         with open(args[2]) as scams:
             scam_link = scams.readlines()
-            result = andy.assess(config_json, scam_link, True, validate_config=True)
+            result = suite.assess(config_json, scam_link, True, validate_config=True)
             print(f"False negative count: {len(result)}")
             for issue in result:
                 print(f"- {issue}")

@@ -1,5 +1,5 @@
+from . import schema
 import jsonschema
-import schema
 import tldextract
 import typing
 import urllib.parse
