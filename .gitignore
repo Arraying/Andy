@@ -1,5 +1,8 @@
 .idea/
+dist/
 src/__pycache__/
+src/andy_fraud.egg-info/
 config.json
 legit.txt
 scam.txt
+token.txt
