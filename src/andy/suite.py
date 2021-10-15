@@ -33,6 +33,8 @@ def is_scam(config: dict, parsed: urllib.parse.ParseResult, validate_config: boo
     threshold_keywords = config["domain_keywords_threshold"]
     threshold_path = config["path_threshold"]
     threshold_querystring = config["query_threshold"]
+    split_path = config["path_split"]
+    split_querystring = config["query_split"]
 
     # Testing the main domain.
     netloc = parsed.netloc
@@ -68,7 +70,7 @@ def is_scam(config: dict, parsed: urllib.parse.ParseResult, validate_config: boo
         # Ignore empty paths.
         if not path:
             continue
-        check_path = _likeliness(path, against_path)
+        check_path = _likeliness(path, against_path, split=split_path)
         # If there is an exact match, then it's a scam.
         # Use higher threshold for checking.
         suspicious = suspicious or check_path > threshold_path
@@ -79,7 +81,7 @@ def is_scam(config: dict, parsed: urllib.parse.ParseResult, validate_config: boo
         # Ignore empty query values.
         if not query:
             continue
-        check_query = _likeliness(query, against_querystring)
+        check_query = _likeliness(query, against_querystring, split=split_querystring)
         # Use higher threshold for checking.
         suspicious = suspicious or check_query > threshold_querystring
 
@@ -116,18 +118,22 @@ def valid_config(config: dict):
     jsonschema.validate(schema=schema.config_schema, instance=config)
 
 
-def _likeliness(value_to_match: str, against: typing.List[str]) -> float:
+def _likeliness(value_to_match: str, against: typing.List[str], split: bool = True) -> float:
     """
     Evaluates the highest match for each component of the value to match.
     Components are strings separated by a dash.
     :param value_to_match: The value to match.
     :param against: A target list of strings to match the values against.
+    :param split: Whether or not to split on "-".
     :return: A value [0-1] where 1 implies at least one component was a perfect match.
     """
-    parts = value_to_match.split('-')
+    if split:
+        parts = value_to_match.split("-")
+    else:
+        parts = [value_to_match]
     ceil = 0
     for safe in against:
-        for i, part in enumerate(parts):
+        for part in parts:
             check = _levenshtein(part, safe)
             if check > ceil:
                 ceil = check

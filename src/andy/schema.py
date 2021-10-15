@@ -40,6 +40,9 @@ config_schema = {
             "minimum": 0,
             "maximum": 1
         },
+        "path_split": {
+            "type": "boolean"
+        },
         "query": {
             "type": "array",
             "items": {
@@ -51,11 +54,14 @@ config_schema = {
             "minimum": 0,
             "maximum": 1
         },
+        "query_split": {
+            "type": "boolean"
+        }
     },
     "required": [
         "domain", "domain_threshold",
         "domain_keywords", "domain_keywords_threshold",
-        "path", "path_threshold",
-        "query", "query_threshold"
+        "path", "path_threshold", "path_split",
+        "query", "query_threshold", "query_split"
     ]
 }

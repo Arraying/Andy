@@ -28,12 +28,16 @@ This will consist of the following keys:
 | `domain_keywords_threshold` | [0-1] | How similar the base domain should be to trigger keyword processing.
 | `path` | string array | A list of fraudulent keywords in the path. |
 | `path_threshold` | [0-1] | How similar strings in the path should be to trigger suspicion. |
+| `path_split` | boolean | Whether to split on "-" in the path and check parts individually. |
 | `query` | string array | A list of fraudulent keywords in a querystring. |
 | `query_threshold` | [0-1] | How similar querystrings should be to trigger suspicion. |
+| `query_split` | boolean | Whether to split on "-" in the querystring and check parts individually. |
 
-**Note:** All non-threshold fields except `domain_keywords` use Levenshtein distance to trigger with "similar" strings. 
+**Note:** All categories except `domain_keywords` use Levenshtein distance to trigger with "similar" strings. 
 For example, the keyword "gift" will cause "g1ft" to trigger too.
 Additionally, there must be at least one value in `domain`.
+
+**Warning:** Setting any of the split values to `true` may considerably increase your false positive rate if misconfigured.
 
 ## Example
 
